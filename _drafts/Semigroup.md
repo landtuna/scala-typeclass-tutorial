@@ -14,13 +14,20 @@ In fact, this "addition typeclass" already exists as a fundamental typeclass cal
 
 So you can imagine that familiar things like addition, multiplication, and building a list are all satisfactory `append` operations.
 
-Let's try extending Semigroup with a class called AddMore.
+Let's try extending Semigroup with an object called AddMore.
 
 {% highlight scala %}
-case class AddMore(a) extends Semigroup
-object AddMore {
-  def append(f1: AddMore, f2: AddMore): AddMore = f1.a + f2.a + 1
+object AddMore extends Semigroup[Int] {
+  def append(a: Int, b: => Int): Int = a + b + 1
 }
+
+println(AddMore.append(1, 2)) // prints 4
+println(AddMore.semigroupLaw.associative(1, 2, 3)) // prints true
+println(AddMore.apply.map(1)(x => 3)) // prints 1 (surprise!)
 {% endhighlight %}
 
-Typeclasses with more features can be built by inheriting from multiple typeclasses.
+So AddMore's `append` function adds two numbers and adds one to the sum. By implementing `append`, we get a few functions for free. Most are not very interesting because the Semigroup laws don't specify enough for much functionality. One more definition that we'll add to Semigroup later will help with that.
+
+You can see that implementing a Scalaz typeclass gets you a typeclass member that has "Law" in the name that helps you test whether your implementation satisfies that typeclass's laws. Semigroup also gives you an implementation of the Apply typeclass, but as you can see, it's kind of broken. Usually, implementing Apply gives you a nice implementation of `map`, but this one ignores the function you pass it! That's a consequence of how little you get from implementing a typeclass with nothing but `append`.
+
+Typeclasses with more features can be built by inheriting from multiple typeclasses (or by inheriting from a typeclass that inherits from multiple typeclasses itself).
